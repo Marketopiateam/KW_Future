@@ -293,7 +293,8 @@ class ApiController extends Controller
         $query = Course::query();
 
         if ($selected_search_string != "" && $selected_search_string != "null") {
-            $query->where('title', $selected_search_string->id);
+            $query->where('title', 'LIKE', "%{$selected_search_string}%");
+            // $query->where('title', $selected_search_string->id);
         }
         if ($selected_category != "all") {
             $query->where('category_id', $selected_category);
@@ -684,4 +685,40 @@ class ApiController extends Controller
         // return $response;
     }
 
+
+    public function enroll_free_course(Request $request)
+    {
+        $token = $request->bearerToken();
+        $response = array();
+
+        if (isset($token) && $token != '') {
+            $user_id = auth('sanctum')->user()->id;
+            $course_id = $request->course_id;
+
+            $course = Course::find($course_id);
+
+            if ($course && $course->is_paid == 0) {
+                $enrollment = Enrollment::firstOrCreate([
+                    'user_id' => $user_id,
+                    'course_id' => $course_id,
+                ]);
+
+                if ($enrollment->wasRecentlyCreated) {
+                    $response['status'] = 'success';
+                    $response['message'] = 'Enrolled in the course successfully';
+                } else {
+                    $response['status'] = 'failed';
+                    $response['message'] = 'Already enrolled in this course';
+                }
+            } else {
+                $response['status'] = 'failed';
+                $response['message'] = 'Course is not free or does not exist';
+            }
+        } else {
+            $response['status'] = 'failed';
+            $response['message'] = 'Unauthorized login';
+        }
+
+        return response()->json($response);
+    }
 }
