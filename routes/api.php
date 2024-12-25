@@ -55,7 +55,7 @@ Route::group(['middleware', ['auth:sanctum']], function () {
     Route::get('payment/{token}', [ApiController::class, 'payment']);
     Route::get('token', [ApiController::class, 'token']);
 
-    Route::post('/enroll_free_course', [ApiController::class, 'enroll_free_course']);
+    Route::get('/enroll_free_course', [ApiController::class, 'enroll_free_course']);
 
 });
 

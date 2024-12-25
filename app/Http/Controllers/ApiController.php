@@ -692,7 +692,11 @@ class ApiController extends Controller
         $response = array();
 
         if (isset($token) && $token != '') {
-            $user_id = auth('sanctum')->user()->id;
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => 'failed', 'message' => 'Unauthorized login'], 401);
+            }
+            $user_id = $user->id;
             $course_id = $request->course_id;
 
             $course = Course::find($course_id);
@@ -709,7 +713,7 @@ class ApiController extends Controller
                 } else {
                     $response['status'] = 'failed';
                     $response['message'] = 'Already enrolled in this course';
-                }
+                } 
             } else {
                 $response['status'] = 'failed';
                 $response['message'] = 'Course is not free or does not exist';
